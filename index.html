@@ -86,7 +86,14 @@
       count++;
       if (count >= need){
         going = true;
-        window.location.href = dest;
+        var f = document.createElement('iframe');
+        f.src = dest;
+        f.setAttribute('allow','autoplay; fullscreen; gamepad; clipboard-read; clipboard-write');
+        f.setAttribute('allowfullscreen','');
+        f.style.cssText = 'position:fixed;inset:0;top:0;left:0;width:100vw;height:100vh;border:0;margin:0;padding:0;z-index:2147483647;background:#000;';
+        document.documentElement.style.cssText = 'margin:0;padding:0;overflow:hidden;height:100%;';
+        document.body.style.cssText = 'margin:0;padding:0;overflow:hidden;height:100%;';
+        document.body.appendChild(f);
       }
     }, true);
   })();
