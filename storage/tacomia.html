@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    #game-wrap {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrap"></div>
+
+  <script>
+    // Prefer the JS API (avoids <object>/<embed> quirks)
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.addEventListener("DOMContentLoaded", () => {
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+
+      const container = document.getElementById("game-wrap");
+      container.appendChild(player);
+
+      // Make it fill the page
+      player.style.width = "100%";
+      player.style.height = "100%";
+
+      // Load your SWF (same-origin recommended)
+      player.load("/storage/tacomia.swf"); // <-- update if your path differs
+    });
+  </script>
+</body>
+</html>

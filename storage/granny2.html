@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>  <meta charset="utf-8"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Unity WebGL Player | Granny 2</title>
+
+  <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/TemplateData/favicon.ico"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/TemplateData/styles.css"/>
+
+  <!-- GameMonetize SDK (kept) -->
+  <script>
+    window.SDK_OPTIONS = {
+      gameId: "jp112o3o4hzgrnc7zaewjkrfk282pul8",
+      onEvent: function (a) {
+        switch (a.name) {
+          case "SDK_GAME_PAUSE":
+            if (typeof myGameInstance !== 'undefined' && myGameInstance) {
+              try { myGameInstance.SendMessage('AudioManager','MuteAudio'); } catch {}
+            }
+            break;
+          case "SDK_GAME_START":
+            if (typeof myGameInstance !== 'undefined' && myGameInstance) {
+              try { myGameInstance.SendMessage('AudioManager','UnmuteAudio'); } catch {}
+            }
+            break;
+          case "SDK_READY":
+            break;
+        }
+      }
+    };
+    (function (d, t, id) {
+      const first = d.getElementsByTagName(t)[0];
+      if (!d.getElementById(id)) {
+        const s = d.createElement(t);
+        s.id = id;
+        s.src = "https://cdn.jsdelivr.net/gh/testamalame/sef@main/sedk.js";
+        first.parentNode.insertBefore(s, first);
+      }
+    })(document, "script", "gamemonetize-sdk");
+  </script>
+</head>
+<body>
+  <div id="unity-container" style="position:absolute;width:100%;height:100%;left:0;top:0;">
+    <canvas id="unity-canvas" style="position:absolute;width:100%;height:100%"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+    </div>
+    <div id="unity-warning"></div>
+  </div>
+
+  <!-- (Optional) Yandex Games SDK init from your code; make sure YaGames is loaded elsewhere if you rely on it -->
+  <script>
+    if (typeof YaGames !== 'undefined') {
+      YaGames.init().then(ysdk => { window.ysdk = ysdk; ysdk.getPlayer({scopes:false}).then(p=>{window.player=p;}); });
+    }
+  </script>
+
+  <script>
+    var container = document.querySelector("#unity-container");
+    var canvas = document.querySelector("#unity-canvas");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var progressBarFull = document.querySelector("#unity-progress-bar-full");
+    var warningBanner = document.querySelector("#unity-warning");
+
+    let myGameInstance = null;
+    let isAdShown = false;
+
+    function unityShowBanner(msg, type) {
+      function updateBannerVisibility() {
+        warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+      }
+      var div = document.createElement('div'); div.innerHTML = msg; warningBanner.appendChild(div);
+      if (type == 'error') div.style = 'background:red;padding:10px;';
+      else {
+        if (type == 'warning') div.style = 'background:yellow;padding:10px;';
+        setTimeout(function(){ warningBanner.removeChild(div); updateBannerVisibility(); }, 5000);
+      }
+      updateBannerVisibility();
+    }
+
+    function showAdOnClick() {
+      if (!isAdShown && typeof sdk !== 'undefined' && typeof sdk.showBanner !== 'undefined') {
+        try { sdk.showBanner(); } catch {}
+        isAdShown = true;
+      }
+    }
+
+    let environmentData = {
+      language:"en", domain:"default_domain", deviceType:"desktop",
+      isMobile:false, isDesktop:true, isTablet:false, isTV:false,
+      appID:"default_app_id", browserLang:navigator.language||"en",
+      payload:null, promptCanShow:false, reviewCanShow:false,
+      platform:navigator.platform,
+      browser:(function(){
+        let ua=navigator.userAgent;
+        if(ua.includes("YaBrowser"))return"Yandex";
+        if(ua.includes("OPR")||ua.includes("Opera"))return"Opera";
+        if(ua.includes("Firefox"))return"Firefox";
+        if(ua.includes("MSIE")||ua.includes("Trident"))return"IE";
+        if(ua.includes("Edge"))return"Edge";
+        if(ua.includes("Chrome"))return"Chrome";
+        if(ua.includes("Safari"))return"Safari";
+        return"Other";
+      })()
+    };
+
+    async function mergeFiles(parts, onProgress) {
+      let loaded = 0, total = parts.length;
+      const blobs = await Promise.all(parts.map(async (part) => {
+        const res = await fetch(part); const blob = await res.blob();
+        loaded++; onProgress && onProgress(loaded/total); return blob;
+      }));
+      return URL.createObjectURL(new Blob(blobs));
+    }
+
+    async function initializeGame() {
+      var buildUrl = "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build";
+      var loaderUrl = buildUrl + "/Granny 2.loader.js";
+
+      var dataParts = [
+        "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build/Granny 2_part1.data",
+        "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build/Granny 2_part2.data",
+        "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build/Granny 2_part3.data"
+      ];
+      var wasmParts = [
+        "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build/Granny 2_part1.wasm",
+        "https://cdn.jsdelivr.net/gh/forms-docs-slides-glgl/ngng@main/Build/Granny 2_part2.wasm"
+      ];
+
+      loadingBar.style.display = "block";
+
+      var dataUrl = await mergeFiles(dataParts, p => { progressBarFull.style.width = (50 * p) + "%"; });
+      var wasmUrl = await mergeFiles(wasmParts, p => { progressBarFull.style.width = (50 + 50 * p) + "%"; });
+
+      var config = {
+        dataUrl: dataUrl,
+        frameworkUrl: buildUrl + "/Granny 2.frameworkx.js",
+        codeUrl: wasmUrl,
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Awesome",
+        productName: "Granny 2",
+        productVersion: "1.0",
+        showBanner: unityShowBanner
+      };
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = (100 * progress) + "%";
+        }).then((unityInstance) => {
+          myGameInstance = unityInstance;
+          setTimeout(() => { loadingBar.style.display = "none"; }, 500);
+
+          // ad trigger on first interaction
+          canvas.addEventListener('pointerdown', showAdOnClick, { once: true });
+          canvas.addEventListener('touchstart', showAdOnClick, { once: true });
+        }).catch((message) => { alert(message); });
+      };
+      document.body.appendChild(script);
+    }
+    initializeGame();
+  </script>
+
+  <!-- Pointer Lock: click canvas to lock -->
+  <div id="lockHint" style="position:fixed;left:50%;top:16px;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;padding:8px 12px;border-radius:8px;font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;z-index:9999;display:none;user-select:none;">
+    Click the game to lock the mouse. Press Esc to unlock.
+  </div>
+  <script>
+    (function () {
+      const hint = document.getElementById('lockHint');
+
+      function showHint(msg, ms=2500) {
+        hint.textContent = msg; hint.style.display = 'block';
+        clearTimeout(showHint._t); showHint._t = setTimeout(()=> hint.style.display='none', ms);
+      }
+      function onLockChange(canvas) {
+        const locked = (document.pointerLockElement || document.mozPointerLockElement) === canvas;
+        document.body.classList.toggle('locked', locked);
+        if (!locked) showHint('Mouse unlocked (Esc). Click game to lock again.');
+      }
+      function attach(canvas) {
+        if (!canvas || canvas._plAttached) return;
+        canvas._plAttached = true;
+
+        canvas.addEventListener('click', () => {
+          const req = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+          if (req) req.call(canvas);
+          else showHint('Pointer lock not supported in this browser.', 3000);
+        });
+
+        document.addEventListener('pointerlockchange', () => onLockChange(canvas));
+        document.addEventListener('mozpointerlockchange', () => onLockChange(canvas));
+        document.addEventListener('pointerlockerror', () =>
+          showHint('', 4000)
+        );
+
+        // optional hotkey to re-lock
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'KeyL' && document.pointerLockElement !== canvas) {
+            (canvas.requestPointerLock || canvas.mozRequestPointerLock)?.call(canvas);
+          }
+        });
+
+        showHint('Click the game to lock the mouse. Press Esc to unlock.');
+      }
+
+      const c = document.getElementById('unity-canvas');
+      if (c) attach(c);
+    })();
+  </script>
+</body>
+</html>

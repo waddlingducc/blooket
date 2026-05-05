@@ -1,0 +1,13 @@
+[mime_types]
+wasm = "application/wasm"
+data = "application/octet-stream"
+mem  = "application/octet-stream"
+json = "application/json"
+unityweb = "application/octet-stream"
+
+[headers]
+"**.unityweb" = { "Content-Encoding" = "gzip", "Cache-Control" = "public, max-age=31536000, immutable" }
+"**.data.unityweb" = { "Content-Encoding" = "gzip", "Cache-Control" = "public, max-age=31536000, immutable" }
+"**.wasm.code.unityweb" = { "Content-Encoding" = "gzip", "Cache-Control" = "public, max-age=31536000, immutable" }
+"**.wasm.framework.unityweb" = { "Content-Encoding" = "gzip", "Cache-Control" = "public, max-age=31536000, immutable" }
+"**" = { "Cross-Origin-Opener-Policy" = "same-origin", "Cross-Origin-Embedder-Policy" = "require-corp" }

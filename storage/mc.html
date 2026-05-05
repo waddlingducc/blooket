@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html style="width:100%;height:100%;background-color:black;">
+<head>  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-WX5VS54ZDW');
+  </script>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="origin-trial" content="ArNPSFm7gVG988ErBulTuZ21VM9sMvN4G90SgXXCOOzf2rbY0PLmI/DYkgEiEZZxC3zIqUIf3NInHkZoSvutyAIAAAB7eyJvcmlnaW4iOiJodHRwczovL2VhZ2xlcmNyYWZ0LmNvbTo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlKU1Byb21pc2VJbnRlZ3JhdGlvbiIsImV4cGlyeSI6MTc0NDY3NTIwMCwiaXNTdWJkb21haW4iOnRydWV9">
+  <meta http-equiv="origin-trial" content="A6nEkkcO9G/wqamPSME1dPmkGL/GvlLLPuW8lI1WBBHX/LCCvJdNYA/nicSPw/9kLEqq9QVv4g0SQL/xdbU8p2oAAAB7eyJvcmlnaW4iOiJodHRwczovL2VhZ2xlcmNyYWZ0LmNvbTo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlKU1Byb21pc2VJbnRlZ3JhdGlvbiIsImV4cGlyeSI6MTczODEzNTMwNCwiaXNTdWJkb21haW4iOnRydWV9">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+  <title>Minecraft 1.12.2</title>
+
+  <script type="text/javascript">
+  window.addEventListener("load", function() {
+    if ((typeof WebAssembly !== "undefined") && (typeof WebAssembly.Suspending !== "undefined")) {
+      try { if ("true" === window.localStorage.getItem("hideEaglerWASMAvailable")) return; } catch(ex){}
+      var el = document.getElementById("eaglerWASMAvailable");
+      var chkbox = document.getElementById("eaglerWASMAvailableDontShow");
+      function handleDontShow() {
+        if (chkbox.checked) {
+          try { window.localStorage.setItem("hideEaglerWASMAvailable", "true"); } catch(ex){}
+        }
+      }
+      el.style.display = "block";
+      document.getElementById("eaglerWASMAvailableYes").addEventListener("click", function() {
+        handleDontShow();
+        document.location.href = "https://eaglercraft.com/mc/1.12.2-wasm/";
+      });
+      document.getElementById("eaglerWASMAvailableNo").addEventListener("click", function() {
+        handleDontShow();
+        el.style.display = "none";
+      });
+    }
+  });
+  </script>
+
+  <script type="text/javascript">
+  window.disableUserscripts = true;
+  window.__eaglercraftLoaderClient = {
+    container: "game_frame",
+    name: "Eaglercraft 1.12",
+    file: "net.peytonplayz585.eaglercraft.v1_12.client",
+    cid: "bafybeidrnchyech7b26rqhm3tayt7p6mxvl23lzd4f5mcyqda7hbrzyal4",
+    path: "",
+    download: "https://cdn.jsdelivr.net/gh/genizy/mc@main/data/1.12.2.gz",
+    dlSize: 15601341,
+    gzip: true
+  };
+  </script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/genizy/mc@main/shared/loader.js"></script>
+  <link type="image/png" rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/genizy/mc@main/shared/game.png" />
+
+  <!-- Pointer Lock UI -->
+  <style>
+    #lockHint {
+      position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+      background: rgba(0,0,0,.6); color: #fff; padding: 8px 12px; border-radius: 8px;
+      font: 600 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; z-index: 9999; display: none;
+    }
+    .locked, .locked * { cursor: none !important; }
+  </style>
+</head>
+<body style="margin:0px;width:100%;height:100%;overflow:hidden;background-color:white;">
+  <div id="eaglerWASMAvailable" style="display:none;position:absolute;left:0px;top:0px;right:0px;z-index:1000;">
+    <div style="margin:auto;max-width:650px;">
+      <div style="margin:20px;border:5px double black;padding:10px;background-color:white;text-align:center;font-family:sans-serif;font-size:1.2em;">
+        <h3>Eaglercraft WebAssembly GC is supported on your browser, would you like to try it?</h3>
+        <p>The new variant of Eaglercraft gets almost <b>2x the FPS</b>, however it may crash if your device doesn't have a lot of memory</p>
+        <p>Your existing singleplayer worlds will be available</p>
+        <h4><input type="checkbox" style="zoom:1.5;" id="eaglerWASMAvailableDontShow"> Do not show again</h4>
+        <p><button id="eaglerWASMAvailableYes" style="zoom:1.5;">Switch to WebAssembly version</button></p>
+        <p><button id="eaglerWASMAvailableNo" style="zoom:1.5;">Keep using JavaScript version</button></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="game_frame" style="width:100%;height:100%;"></div>
+  <div id="lockHint">Click the game to lock the mouse. Press Esc to unlock.</div>
+
+  <script>
+  (function () {
+    const hint = document.getElementById('lockHint');
+
+    function showHint(msg, ms=2500) {
+      hint.textContent = msg;
+      hint.style.display = 'block';
+      clearTimeout(showHint._t);
+      showHint._t = setTimeout(() => hint.style.display='none', ms);
+    }
+
+    function onLockChange(canvas) {
+      const locked = (document.pointerLockElement || document.mozPointerLockElement) === canvas;
+      document.body.classList.toggle('locked', locked);
+      if (!locked) showHint("Mouse unlocked (Esc). Click game to lock again.");
+    }
+
+    function attachToCanvas(canvas) {
+      if (!canvas || canvas._plAttached) return;
+      canvas._plAttached = true;
+
+      // Click to lock (must be a user gesture)
+      canvas.addEventListener("click", () => {
+        const req = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+        if (req) req.call(canvas);
+        else showHint("Pointer lock not supported in this browser.", 3000);
+      });
+
+      document.addEventListener("pointerlockchange", () => onLockChange(canvas));
+      document.addEventListener("mozpointerlockchange", () => onLockChange(canvas));
+      document.addEventListener("pointerlockerror", () =>
+        showHint(" ", 4000)
+      );
+
+      // Optional: hotkey to re-lock
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyL' && document.pointerLockElement !== canvas) {
+          (canvas.requestPointerLock || canvas.mozRequestPointerLock)?.call(canvas);
+        }
+      });
+
+      showHint("Click the game to lock the mouse. Press Esc to unlock.");
+    }
+
+    // Canvas is created dynamically by Eaglercraft → wait for it
+    function findCanvas() {
+      return document.querySelector('#game_frame canvas') || document.querySelector('canvas');
+    }
+
+    const target = document.getElementById("game_frame");
+    const observer = new MutationObserver(() => {
+      const c = findCanvas();
+      if (c) { attachToCanvas(c); observer.disconnect(); }
+    });
+    observer.observe(target, { childList: true, subtree: true });
+
+    // Fallback polling (in case the loader replaces nodes wholesale)
+    let tries = 0;
+    const iv = setInterval(() => {
+      const c = findCanvas();
+      if (c || tries++ > 200) { // ~20s
+        clearInterval(iv);
+        if (c) attachToCanvas(c);
+      }
+    }, 100);
+  })();
+  </script>
+</body>
+</html>

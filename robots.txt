@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /storage/
+
+Sitemap: https://nebulaplay.net/sitemap.xml

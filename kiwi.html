@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-16934078239"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-16934078239');
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Blooket - Fun, Free, Educational Games for Everyone</title>
+    <meta name="description" content="Blooket is an exciting new take on the modern classroom review game. It aims to match action with education to create the ultimate learning experience!" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+    <script>
+      (function(){
+        var DESIRED = 'Blooket - Fun, Free, Educational Games for Everyone';
+        try { document.title = DESIRED; } catch(_) {}
+        try {
+          Object.defineProperty(document, 'title', {
+            configurable: true,
+            get: function(){ return DESIRED; },
+            set: function(_v){ /* locked */ }
+          });
+        } catch(_) {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function () {
+        if (window.location.pathname.endsWith('/index.html') || window.location.pathname.endsWith('/kiwi.html')) {
+          var newPath = window.location.pathname.replace(/\/(index|kiwi)\.html$/, '/');
+          window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+        }
+      })();
+      (function () {
+        var overlay, iframe, prevOverflow;
+        function ensure() {
+          if (overlay) return;
+          overlay = document.createElement('div');
+          overlay.id = 'kiwi-game-overlay';
+          overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#000;display:none';
+          iframe = document.createElement('iframe');
+          iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;background:#000';
+          iframe.setAttribute('allow', 'fullscreen; autoplay; clipboard-read; clipboard-write; gamepad');
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.addEventListener('load', function () {
+            try {
+              var p = iframe.contentWindow.location.pathname;
+              if (p === '/' || p === '/index.html') {
+                window.kiwiClose();
+              }
+            } catch (_) {}
+          });
+          overlay.appendChild(iframe);
+          document.body.appendChild(overlay);
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && overlay.style.display !== 'none') window.kiwiClose();
+          });
+        }
+        window.kiwiOpen = function (url, title) {
+          ensure();
+          iframe.src = url;
+          overlay.style.display = 'block';
+          prevOverflow = document.documentElement.style.overflow;
+          document.documentElement.style.overflow = 'hidden';
+          if (title) { try { document.title = title + ' - kiwi'; } catch (_) {} }
+        };
+        window.kiwiClose = function () {
+          if (!overlay) return;
+          overlay.style.display = 'none';
+          iframe.src = 'about:blank';
+          document.documentElement.style.overflow = prevOverflow || '';
+          try { document.title = 'kiwi'; } catch (_) {}
+        };
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CBLBD6bkO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-xiO5cBH3.css">
+    <link rel="stylesheet" href="/homepage-extras.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <footer style="position:relative;z-index:10;text-align:center;padding:24px 16px 32px;color:#7a7a7a;font-family:Inter,sans-serif;font-size:13px;">
+      <a href="/$/dmca" style="color:#ffffff;text-decoration:none;margin:0 12px;">dmca</a>
+      <a href="/$/credits" style="color:#ffffff;text-decoration:none;margin:0 12px;">credits</a>
+    </footer>
+  </body>
+</html>

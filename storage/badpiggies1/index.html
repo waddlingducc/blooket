@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unity WebGL Player | Bad Piggies WebGL</title>
+
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #111;
+      overflow: hidden;
+    }
+
+    #gameContainer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #gameContainer canvas {
+      display: block;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0;
+    }
+  </style>
+
+  <script src="TemplateData/UnityProgress.js"></script>
+  <script src="Build/UnityLoader.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      window.gameInstance = UnityLoader.instantiate(
+        "gameContainer",
+        "Build/WebGL_September222022.json",
+        { onProgress: UnityProgress }
+      );
+
+      // Force canvas resize to always match screen size
+      function resizeCanvas() {
+        const canvas = document.querySelector('#gameContainer canvas');
+        if (canvas) {
+          canvas.width  = window.innerWidth;
+          canvas.height = window.innerHeight;
+          canvas.style.width  = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+        }
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', resizeCanvas);
+
+      // Wait until Unity injects canvas, then resize
+      const observer = new MutationObserver(() => {
+        const canvas = document.querySelector('#gameContainer canvas');
+        if (canvas) {
+          resizeCanvas();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.getElementById('gameContainer'), { childList: true, subtree: true });
+    });
+  </script>
+</head>
+<body>
+  <div id="gameContainer"></div>
+</body>
+</html>

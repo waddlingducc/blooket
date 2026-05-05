@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" style="width:100%;height:100%;background:#000;">
+<head>  <!-- Optional: load gtag.js if you want analytics to work -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WX5VS54ZDW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-WX5VS54ZDW');
+  </script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/n-101-1/1@main/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/UnityProgress.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.js"></script>
+
+  <script>
+    var gameInstance;
+    window.onload = function() {
+      gameInstance = UnityLoader.instantiate(
+        "gameContainer",
+        "https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.json",
+        {
+          onProgress: UnityProgress,
+          Module: {
+            onRuntimeInitialized: function() {
+              UnityProgress(gameInstance, "complete");
+            }
+          }
+        }
+      );
+    };
+  </script>
+
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000;
+    }
+    .webgl-content, #gameContainer {
+      width: 100%; height: 100%;
+    }
+    /* Pointer Lock hint + hide cursor while locked */
+    #lockHint {
+      position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+      background: rgba(0,0,0,.6); color: #fff; padding: 8px 12px; border-radius: 8px;
+      font: 600 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      z-index: 9999; display: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    .locked, .locked * { cursor: none !important; }
+  </style>
+</head>
+<body style="margin:0;width:100%;height:100%;overflow:hidden;background:#000;">
+  <div class="webgl-content">
+    <div id="gameContainer" style="width:100%;height:100%;margin:auto;"></div>
+  </div>
+
+  <!-- Your firebase scripts (unchanged) -->
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firebase.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1login.js?v=2"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/1firestore.js"></script>
+  <script>
+    // Your ad callbacks (unchanged)
+    function initializeFireBase(){ try { if (window.initializeFireBase) window.initializeFireBase(); } catch(_){} }
+    initializeFireBase();
+    function showAds(){ console.log("show ads"); }
+    function requestNewAd(){ unityAdFinishedCallback(); }
+    function unityAdFinishedCallback(){
+      try { if (window.gameInstance) gameInstance.SendMessage("AdsManager","OnWebCallback"); }
+      catch (e) { console.log(e); }
+    }
+  </script>
+
+  <!-- Pointer Lock: wait for Unity's canvas then request on click -->
+  <div id="lockHint">Click the game to lock the mouse. Press Esc to unlock.</div>
+  <script>
+  (function () {
+    const hint = document.getElementById('lockHint');
+
+    function showHint(msg, ms=2500) {
+      hint.textContent = msg;
+      hint.style.display = 'block';
+      clearTimeout(showHint._t);
+      showHint._t = setTimeout(() => hint.style.display='none', ms);
+    }
+
+    function onLockChange(canvas) {
+      const locked = (document.pointerLockElement || document.mozPointerLockElement) === canvas;
+      document.body.classList.toggle('locked', locked);
+      if (!locked) showHint("Mouse unlocked (Esc). Click game to lock again.");
+    }
+
+    function attachToCanvas(canvas) {
+      if (!canvas || canvas._plAttached) return;
+      canvas._plAttached = true;
+
+      // Click to lock (requires user gesture)
+      canvas.addEventListener("click", () => {
+        const req = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+        if (req) req.call(canvas);
+        else showHint("Pointer lock not supported in this browser.", 3000);
+      });
+
+      document.addEventListener("pointerlockchange", () => onLockChange(canvas));
+      document.addEventListener("mozpointerlockchange", () => onLockChange(canvas));
+      document.addEventListener("pointerlockerror", () =>
+        showHint("Could not lock mouse. If embedded, ensure the iframe allows pointer-lock.", 4000)
+      );
+
+      // Optional hotkey to re-lock
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyL' && document.pointerLockElement !== canvas) {
+          (canvas.requestPointerLock || canvas.mozRequestPointerLock)?.call(canvas);
+        }
+      });
+
+      showHint("Click the game to lock the mouse. Press Esc to unlock.");
+    }
+
+    function findCanvas() {
+      // Unity WebGL creates a single <canvas> inside #gameContainer
+      return document.querySelector('#gameContainer canvas') || document.querySelector('canvas');
+    }
+
+    // Observe #gameContainer for the canvas
+    const container = document.getElementById("gameContainer");
+    const observer = new MutationObserver(() => {
+      const c = findCanvas();
+      if (c) { attachToCanvas(c); observer.disconnect(); }
+    });
+    observer.observe(container, { childList: true, subtree: true });
+
+    // Fallback polling (in case of wholesale node replacement)
+    let tries = 0;
+    const iv = setInterval(() => {
+      const c = findCanvas();
+      if (c || tries++ > 200) { // ~20s
+        clearInterval(iv);
+        if (c) attachToCanvas(c);
+      }
+    }, 100);
+  })();
+  </script>
+</body>
+</html>

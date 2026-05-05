@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>  <meta charset="utf-8">
+  <title>Granny Original</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/TemplateData/style.css">
+  <script src="https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/sdk.js"></script>
+
+  <!-- GameMonetize SDK Integration (kept) -->
+  <script>
+    window.SDK_OPTIONS = {
+      gameId: "jp112o3o4hzgrnc7zaewjkrfk282pul8",
+      onEvent: function (a) {
+        switch (a.name) {
+          case "SDK_GAME_PAUSE":
+            if (typeof myGameInstance !== 'undefined' && myGameInstance) {
+              try { myGameInstance.SendMessage('AudioManager','MuteAudio'); } catch {}
+            }
+            break;
+          case "SDK_GAME_START":
+            if (typeof myGameInstance !== 'undefined' && myGameInstance) {
+              try { myGameInstance.SendMessage('AudioManager','UnmuteAudio'); } catch {}
+            }
+            break;
+          case "SDK_READY":
+            break;
+        }
+      }
+    };
+    (function (d, t, id) {
+      const first = d.getElementsByTagName(t)[0];
+      if (!d.getElementById(id)) {
+        const s = d.createElement(t);
+        s.id = id;
+        s.src = "https://cdn.jsdelivr.net/gh/testamalame/sef@main/sedk.js";
+        first.parentNode.insertBefore(s, first);
+      }
+    })(document, "script", "gamemonetize-sdk");
+  </script>
+
+  <style>
+    body {
+      margin: 0; padding: 0; overflow: hidden;
+      background: url('https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/background.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    #unity-container { position: absolute; width: 100%; height: 100%; left: 0; top: 0; }
+    #unity-canvas { position: absolute; width: 100%; height: 100%; display:block; }
+
+    #unity-loading-bar {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 400px; height: 20px; background: rgba(0,0,0,0.5);
+      border: 2px solid #fff; border-radius: 10px; display: block;
+    }
+    #unity-logo { position: absolute; top: calc(50% - 100px); left: 50%; transform: translateX(-50%); width: 200px; }
+    #unity-logo img { max-width: 100%; height: auto; }
+    #unity-progress-bar-empty { width: 100%; height: 100%; position: relative; }
+    #unity-progress-bar-full { position: absolute; top: 0; left: 0; width: 0%; height: 100%; background: #4caf50; border-radius: 8px; transition: width .3s ease; }
+    #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none; border: 1px solid #ccc; border-radius: 5px; }
+
+    /* Pointer-lock hint + hide cursor while locked */
+    #lockHint {
+      position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
+      background: rgba(0,0,0,.6); color: #fff; padding: 8px 12px; border-radius: 8px;
+      font: 600 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      z-index: 9999; display: none; user-select: none;
+    }
+    .locked, .locked * { cursor: none !important; }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1" oncontextmenu="return false;"></canvas>
+
+    <div id="unity-loading-bar">
+      <div id="unity-logo"><img src="https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/logo.png" alt="Granny Logo"></div>
+      <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+    </div>
+    <div id="unity-warning"></div>
+  </div>
+
+  <script>
+    async function mergeUnityWebFiles(baseUrl, filePrefix, totalParts, extension) {
+      const partUrls = [];
+      for (let i = 1; i <= totalParts; i++) partUrls.push(`${baseUrl}/${filePrefix}_part${i}.${extension}`);
+
+      const buffers = [];
+      for (let i = 0; i < totalParts; i++) {
+        const response = await fetch(partUrls[i]);
+        if (!response.ok) throw new Error(`Failed to load part: ${partUrls[i]}`);
+        buffers.push(await response.arrayBuffer());
+        document.querySelector("#unity-progress-bar-full").style.width = `${((i + 1) / totalParts) * 100}%`;
+      }
+
+      const totalLength = buffers.reduce((acc, b) => acc + b.byteLength, 0);
+      const combined = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const buf of buffers) { combined.set(new Uint8Array(buf), offset); offset += buf.byteLength; }
+      return combined;
+    }
+
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingBar = document.querySelector("#unity-loading-bar");
+    const progressBarFull = document.querySelector("#unity-progress-bar-full");
+    const warningBanner = document.querySelector("#unity-warning");
+
+    let myGameInstance = null;
+    let isAdShown = false;
+
+    function unityShowBanner(msg, type) {
+      function update() { warningBanner.style.display = warningBanner.children.length ? 'block' : 'none'; }
+      const div = document.createElement('div'); div.innerHTML = msg; warningBanner.appendChild(div);
+      if (type === 'error') div.style = 'background:red;padding:10px;';
+      else { if (type === 'warning') div.style = 'background:yellow;padding:10px;'; setTimeout(()=>{ warningBanner.removeChild(div); update(); }, 5000); }
+      update();
+    }
+
+    function showAdOnClick() {
+      if (!isAdShown && typeof sdk !== 'undefined' && typeof sdk.showBanner !== 'undefined') {
+        try { sdk.showBanner(); } catch {}
+        isAdShown = true;
+      }
+    }
+
+    const buildUrl = "https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/Build";
+    const loaderUrl = buildUrl + "/Granny.loader.js";
+
+    async function initializeGame() {
+      try {
+        const dataBuffer = await mergeUnityWebFiles(buildUrl, "Granny", 2, "data");
+        const wasmBuffer = await mergeUnityWebFiles(buildUrl, "Granny", 2, "wasm");
+
+        const dataBlobUrl = URL.createObjectURL(new Blob([dataBuffer], { type: "application/octet-stream" }));
+        const wasmBlobUrl = URL.createObjectURL(new Blob([wasmBuffer], { type: "application/octet-stream" }));
+
+        const config = {
+          dataUrl: dataBlobUrl,
+          frameworkUrl: buildUrl + "/Granny.framework.js",
+          codeUrl: wasmBlobUrl,
+          streamingAssetsUrl: "https://cdn.jsdelivr.net/gh/gru6nny/ohd@main/StreamingAssets",
+          companyName: "Anastasia Kazantseva",
+          productName: "Granny",
+          productVersion: "1.0",
+          showBanner: unityShowBanner
+        };
+
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            progressBarFull.style.width = (100 * progress) + "%";
+          }).then((unityInstance) => {
+            myGameInstance = unityInstance;
+            loadingBar.style.display = "none";
+
+            // Ad trigger on first interaction (kept)
+            canvas.addEventListener('pointerdown', showAdOnClick, { once: true });
+            canvas.addEventListener('touchstart', showAdOnClick, { once: true });
+          }).catch((message) => { alert(message); });
+        };
+        document.body.appendChild(script);
+      } catch (error) {
+        console.error("Game initialization failed:", error);
+      }
+    }
+    initializeGame();
+  </script>
+
+  <!-- Pointer Lock: click canvas to lock mouse -->
+  <div id="lockHint">Click the game to lock the mouse. Press Esc to unlock.</div>
+  <script>
+    (function () {
+      const hint = document.getElementById('lockHint');
+
+      function showHint(msg, ms=2500) {
+        hint.textContent = msg; hint.style.display = 'block';
+        clearTimeout(showHint._t); showHint._t = setTimeout(()=> hint.style.display='none', ms);
+      }
+      function onLockChange(canvas) {
+        const locked = (document.pointerLockElement || document.mozPointerLockElement) === canvas;
+        document.body.classList.toggle('locked', locked);
+        if (!locked) showHint('Mouse unlocked (Esc). Click game to lock again.');
+      }
+      function attach(canvas) {
+        if (!canvas || canvas._plAttached) return;
+        canvas._plAttached = true;
+
+        // Require a user gesture
+        canvas.addEventListener('click', () => {
+          const req = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+          if (req) req.call(canvas);
+          else showHint('Pointer lock not supported in this browser.', 3000);
+        });
+
+        document.addEventListener('pointerlockchange', () => onLockChange(canvas));
+        document.addEventListener('mozpointerlockchange', () => onLockChange(canvas));
+        document.addEventListener('pointerlockerror', () =>
+          showHint('', 4000)
+        );
+
+        // Optional hotkey to re-lock
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'KeyL' && document.pointerLockElement !== canvas) {
+            (canvas.requestPointerLock || canvas.mozRequestPointerLock)?.call(canvas);
+          }
+        });
+
+        showHint('Click the game to lock the mouse. Press Esc to unlock.');
+      }
+
+      // Canvas exists immediately in this template
+      const c = document.getElementById('unity-canvas');
+      if (c) attach(c);
+    })();
+  </script>
+
+  <!-- Hardened context-menu blocker (document + canvases + late binding) -->
+  <script>
+  (function () {
+    const prevent = e => { e.preventDefault(); e.stopPropagation(); return false; };
+    const blockButtons = e => { if (e.button === 2) prevent(e); };
+
+    // Document-level block (capture runs before game handlers)
+    document.addEventListener('contextmenu', prevent, {capture:true});
+    document.addEventListener('mousedown',  blockButtons, {capture:true});
+    document.addEventListener('mouseup',    blockButtons, {capture:true});
+    if (document.body) document.body.oncontextmenu = () => false;
+
+    // Bind to all canvases and any added later
+    function wireCanvas(c){
+      if (!c || c.__ctxBlocked) return;
+      c.addEventListener('contextmenu', prevent, {capture:true});
+      c.addEventListener('mousedown',  blockButtons, {capture:true});
+      c.addEventListener('mouseup',    blockButtons, {capture:true});
+      c.setAttribute('oncontextmenu','return false;');
+      c.__ctxBlocked = true;
+    }
+    document.querySelectorAll('canvas').forEach(wireCanvas);
+    new MutationObserver(muts=>{
+      muts.forEach(m=>{
+        m.addedNodes && m.addedNodes.forEach(n=>{
+          if (n.nodeType !== 1) return;
+          if (n.tagName === 'CANVAS') wireCanvas(n);
+          n.querySelectorAll && n.querySelectorAll('canvas').forEach(wireCanvas);
+        });
+      });
+    }).observe(document.documentElement, {childList:true, subtree:true});
+
+    // Optional: block Ctrl/Cmd/Middle (for any anchors that appear)
+    const blockOpen = e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) prevent(e); };
+    document.addEventListener('click',    blockOpen, {capture:true});
+    document.addEventListener('auxclick', blockOpen, {capture:true});
+
+    // Debug to verify the blocker is active and see any remaining targets
+    document.addEventListener('contextmenu', e=>{
+      console.log('[granny] contextmenu target:', e.target.tagName, e.target.id || '', e.target.className || '');
+    }, {capture:true});
+    console.log('[granny] hardened blocker active');
+  })();
+  </script>
+</body>
+</html>
