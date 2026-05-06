@@ -9,12 +9,29 @@ const riveAnimsDeferred = [
 const path = 'https://ac.blooket.com/www/assets/animations/';
 const ext = '.riv';
 
+const visibilityObserverDeferred = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    const r = entry.target.__riveInstance;
+    if (!r) return;
+    if (entry.isIntersecting) {
+      try { r.play(); } catch (_) {}
+    } else {
+      try { r.pause(); } catch (_) {}
+    }
+  });
+}, { rootMargin: '100px 0px 100px 0px' });
+
+document.addEventListener('visibilitychange', () => {
+  document.querySelectorAll('canvas.sectionCanvas').forEach((el) => {
+    const r = el.__riveInstance;
+    if (!r) return;
+    try { document.hidden ? r.pause() : r.play(); } catch (_) {}
+  });
+});
+
 const callback = (entries, obs) => {
   entries.forEach((entry) => {
-    // If its not on the screen yet, do nothing
     if (!entry.isIntersecting) return;
-
-    // Initiate anim when its visible & not yet loaded
     if (!entry.target.classList.contains('loaded')) {
       var r = new rive.Rive({
         src: path.concat(entry.target.id, ext),
@@ -22,13 +39,12 @@ const callback = (entries, obs) => {
         autoplay: false,
         onLoad: () => {
           r.resizeDrawingSurfaceToCanvas();
-          // Play the animation after a slight delay
+          entry.target.__riveInstance = r;
           setTimeout(() => {
             r.play();
-            // Remove background placeholder image
             entry.target.classList.add('loaded');
+            visibilityObserverDeferred.observe(entry.target);
           }, 10);
-          // Stop observing the element
           obs.unobserve(entry.target);
         },
       });
@@ -36,7 +52,6 @@ const callback = (entries, obs) => {
   });
 };
 
-// Create a new observer with margin
 let animationObserver;
 let options = {
   root: null,
@@ -44,8 +59,7 @@ let options = {
 };
 animationObserver = new IntersectionObserver(callback, options);
 
-// Observe each animation canvas position
 riveAnimsDeferred.forEach((id) => {
   const el = document.getElementById(id);
-  animationObserver.observe(el);
+  if (el) animationObserver.observe(el);
 });

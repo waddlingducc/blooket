@@ -12,9 +12,7 @@
 </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
     <title>Blooket - Fun, Free, Educational Games for Everyone</title>
     <meta name="description" content="Blooket is an exciting new take on the modern classroom review game. It aims to match action with education to create the ultimate learning experience!" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
@@ -66,12 +64,27 @@
             if (e.key === 'Escape' && overlay.style.display !== 'none') window.kiwiClose();
           });
         }
+        var origRAF = window.requestAnimationFrame;
+        var origSI  = window.setInterval;
+        var rootEl;
+        function pauseHost(){
+          rootEl = rootEl || document.getElementById('root');
+          if (rootEl) rootEl.style.visibility = 'hidden';
+          window.requestAnimationFrame = function(){ return 0; };
+          window.setInterval = function(){ return 0; };
+        }
+        function resumeHost(){
+          if (rootEl) rootEl.style.visibility = '';
+          window.requestAnimationFrame = origRAF;
+          window.setInterval = origSI;
+        }
         window.kiwiOpen = function (url, title) {
           ensure();
           iframe.src = url;
           overlay.style.display = 'block';
           prevOverflow = document.documentElement.style.overflow;
           document.documentElement.style.overflow = 'hidden';
+          pauseHost();
           if (title) { try { document.title = title + ' - kiwi'; } catch (_) {} }
         };
         window.kiwiClose = function () {
@@ -79,6 +92,7 @@
           overlay.style.display = 'none';
           iframe.src = 'about:blank';
           document.documentElement.style.overflow = prevOverflow || '';
+          resumeHost();
           try { document.title = 'kiwi'; } catch (_) {}
         };
       })();
